@@ -1,9 +1,7 @@
-// Importieren von notwendigen Abhängigkeiten aus 'react'
-import './App.css';  // Importieren der CSS-Datei für Styling
-import initialCharactersData from './charactersData'; // Importieren der Charakterdaten
-import { useState, useEffect } from 'react'; // Importieren von Hooks aus React
+import React, { useState, useEffect } from 'react';
+import './App.css';
+import charactersData from './charactersData';
 
-// Definition der Character-Schnittstelle
 interface Character {
     id: number;
     name: string;
@@ -11,53 +9,49 @@ interface Character {
     species: string;
 }
 
-// Definition der Hauptkomponente 'App'
 function App() {
-    // State für die Charakterdaten, initial leer
-    const [charactersData, setCharactersData] = useState<Character[]>([]);
-    // State für die aktuelle Seite in der Paginierung, initial auf 0
     const [currentPage, setCurrentPage] = useState(0);
-
-    // Konstante für die Anzahl der Charaktere pro Seite
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filteredCharacters, setFilteredCharacters] = useState<Character[]>([]);
+    const [error, setError] = useState('');
     const charactersPerPage = 5;
-    // Berechnung des Startindex für die aktuelle Seite
-    const startIndex = currentPage * charactersPerPage;
 
-    // useEffect-Hook, um die Charakterdaten beim ersten Render-Vorgang zu laden
+    // Filterfunktion, die auf den Suchbegriff reagiert
     useEffect(() => {
-        // Setzen der initial geladenen Charakterdaten in den State
-        setCharactersData(initialCharactersData);
-    }, []);
+        const filtered = charactersData.filter(character =>
+            character.name.toLowerCase().includes(searchTerm.toLowerCase())
+        );
 
-    // Bestimmung der Charaktere, die auf der aktuellen Seite angezeigt werden
-    const currentCharacters = charactersData.slice(startIndex, startIndex + charactersPerPage);
+        setFilteredCharacters(filtered);
+        setCurrentPage(0); // Zurücksetzen der aktuellen Seite bei neuer Suche
+        setError(filtered.length === 0 ? 'Kein Charakter mit diesem Namen gefunden.' : '');
+    }, [searchTerm]);
 
-    // Funktion, um zur nächsten Seite zu navigieren
-    const nextPage = () => {
-        // Aktualisieren des currentPage-State um eins nach oben
-        setCurrentPage((prevPage) => prevPage + 1);
-    };
+    // Bestimmen der Charaktere für die aktuelle Seite
+    const currentCharacters = filteredCharacters.slice(
+        currentPage * charactersPerPage,
+        (currentPage + 1) * charactersPerPage
+    );
 
-    // Funktion, um zur vorherigen Seite zu navigieren
-    const prevPage = () => {
-        // Aktualisieren des currentPage-State um eins nach unten, aber nicht kleiner als 0
-        setCurrentPage((prevPage) => (prevPage > 0 ? prevPage - 1 : 0));
-    };
+    const nextPage = () => setCurrentPage(prev => prev + 1);
+    const prevPage = () => setCurrentPage(prev => (prev > 0 ? prev - 1 : 0));
 
-    // Render-Methode der App-Komponente
     return (
         <>
-            <h1>Rick and Morty Characters</h1> {/* Überschrift */}
-            {/* Charakter-Tabelle mit den aktuellen Charakteren */}
+            <h1>Rick and Morty Characters</h1>
+            <input
+                type="text"
+                placeholder="Suche nach Charakteren"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            {error && <div className="error">{error}</div>}
             <CharacterTable characters={currentCharacters} />
-            {/* Button, um zur vorherigen Seite zu navigieren */}
             <button onClick={prevPage} disabled={currentPage === 0}>Vorherige 5 Charaktere</button>
-            {/* Button, um zur nächsten Seite zu navigieren */}
-            <button onClick={nextPage} disabled={startIndex + charactersPerPage >= charactersData.length}>Nächste 5 Charaktere</button>
+            <button onClick={nextPage} disabled={(currentPage + 1) * charactersPerPage >= filteredCharacters.length}>Nächste 5 Charaktere</button>
         </>
     );
 }
-
 // Komponente für die Charakter-Tabelle
 function CharacterTable({ characters }: { characters: Character[] }) {
     // Render-Methode der CharacterTable-Komponente
