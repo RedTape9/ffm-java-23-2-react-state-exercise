@@ -1,7 +1,11 @@
+// Importieren der benötigten React-Hooks und der CSS-Datei
 import React, { useState, useEffect } from 'react';
 import './App.css';
+
+// Importieren der Charakterdaten
 import charactersData from './charactersData';
 
+// Definition der Charakter-Schnittstelle
 interface Character {
     id: number;
     name: string;
@@ -9,7 +13,9 @@ interface Character {
     species: string;
 }
 
+// Hauptkomponente der Anwendung
 function App() {
+    // Zustandsvariablen für die aktuelle Seite, den Suchbegriff, die gefilterten Charaktere und eventuelle Fehler
     const [currentPage, setCurrentPage] = useState(0);
     const [searchTerm, setSearchTerm] = useState('');
     const [filteredCharacters, setFilteredCharacters] = useState<Character[]>([]);
@@ -33,9 +39,11 @@ function App() {
         (currentPage + 1) * charactersPerPage
     );
 
+    // Funktionen zum Wechseln der Seiten
     const nextPage = () => setCurrentPage(prev => prev + 1);
     const prevPage = () => setCurrentPage(prev => (prev > 0 ? prev - 1 : 0));
 
+    // Render-Methode der App-Komponente
     return (
         <>
             <h1>Rick and Morty Characters</h1>
@@ -52,6 +60,7 @@ function App() {
         </>
     );
 }
+
 // Komponente für die Charakter-Tabelle
 function CharacterTable({ characters }: { characters: Character[] }) {
     // Render-Methode der CharacterTable-Komponente
